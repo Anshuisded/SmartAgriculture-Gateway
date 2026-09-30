@@ -1,26 +1,36 @@
 #include "network/TcpClient.h"
+#include "sensor/SensorSimulator.h"
 
 #include <iostream>
-#include <string>
+#include <sstream>
 
 int main() {
+
+    SensorSimulator sensor("NODE_01");
+    SensorData data = sensor.generateReading();
 
     TcpClient client("127.0.0.1", 5000);
 
     if (!client.connectToServer()) {
-        std::cerr << "Could not connect to gateway.\n";
+        std::cerr << "Failed to connect to gateway.\n";
         return 1;
     }
 
-    std::string telemetry =
-        "NODE_01|soil_moisture=28.5|temperature=31.2|humidity=67.4|battery=91.0";
+    std::ostringstream telemetry;
 
-    if (client.sendData(telemetry)) {
-        std::cout << "Telemetry sent successfully.\n";
-    } else {
+    telemetry << data.nodeId
+              << "|soil_moisture=" << data.soilMoisture
+              << "|temperature=" << data.temperature
+              << "|humidity=" << data.humidity
+              << "|battery=" << data.batteryLevel
+              << "|status=" << data.status;
+
+    if (!client.sendData(telemetry.str())) {
         std::cerr << "Failed to send telemetry.\n";
         return 1;
     }
+
+    std::cout << "Telemetry sent successfully.\n";
 
     return 0;
 }

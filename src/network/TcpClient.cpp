@@ -10,6 +10,15 @@
 TcpClient::TcpClient(const std::string& host, int port)
     : host(host), port(port), clientSocket(-1) {
 }
+TcpClient::~TcpClient() {
+    if (clientSocket >= 0) {
+        close(clientSocket);
+        clientSocket = -1;
+    }
+}
+
+
+
 
 bool TcpClient::connectToServer() {
 

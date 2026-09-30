@@ -6,6 +6,8 @@
 class TcpClient {
 public:
     TcpClient(const std::string& host, int port);
+~TcpClient();
+
 
     bool connectToServer();
     bool sendData(const std::string& data);
