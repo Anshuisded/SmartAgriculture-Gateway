@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -pthread -Iinclude
+CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -pthread -Iinclude -Iinclude/sensor
 
 TARGET = bin/smart_gateway
 
