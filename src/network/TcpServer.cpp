@@ -60,9 +60,7 @@ void TcpServer::start() {
 
     if (listen(serverSocket, 10) < 0) {
 
-        std::cerr << "Failed to listen on port "
-                  << port << ".\n";
-
+        std::cerr << "Failed to listen on server socket.\n";
         close(serverSocket);
         serverSocket = -1;
         return;
@@ -88,7 +86,12 @@ void TcpServer::start() {
 
         std::cout << "Sensor node connected.\n";
 
-        std::thread(&TcpServer::handleClient,this,clientSocket).detach();
+        std::thread clientThread(
+            &TcpServer::handleClient,
+            this,
+            clientSocket);
+
+        clientThread.detach();
     }
 }
 
