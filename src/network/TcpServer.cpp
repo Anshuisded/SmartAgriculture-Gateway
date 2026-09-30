@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <thread>
 
 TcpServer::TcpServer(int port)
     : port(port), serverSocket(-1) {
@@ -87,7 +88,7 @@ void TcpServer::start() {
 
         std::cout << "Sensor node connected.\n";
 
-        handleClient(clientSocket);
+        std::thread(&TcpServer::handleClient,this,clientSocket).detach();
     }
 }
 
