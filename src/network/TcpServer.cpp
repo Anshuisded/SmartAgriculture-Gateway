@@ -1,5 +1,6 @@
 #include "network/TcpServer.h"
 
+#include "alerts/AlertEngine.h"
 #include "processing/TelemetryProcessor.h"
 #include "processing/TelemetryValidator.h"
 #include "sensor/SensorData.h"
@@ -142,9 +143,11 @@ void TcpServer::handleClient(int clientSocket) {
         std::size_t separator = field.find('=');
 
         if (separator == std::string::npos) {
+
             if (data.nodeId.empty()) {
                 data.nodeId = field;
             }
+
             continue;
         }
 
@@ -179,6 +182,7 @@ void TcpServer::handleClient(int clientSocket) {
 
     TelemetryValidator validator;
     TelemetryProcessor processor;
+    AlertEngine alertEngine;
 
     if (!validator.validate(data)) {
 
@@ -190,6 +194,24 @@ void TcpServer::handleClient(int clientSocket) {
 
         std::cout << "Processed telemetry:\n";
         std::cout << processor.process(data) << '\n';
+
+        std::vector<std::string> alerts =
+            alertEngine.generateAlerts(data);
+
+        if (alerts.empty()) {
+
+            std::cout << "Alerts: NONE\n";
+
+        } else {
+
+            std::cout << "Alerts generated: "
+                      << alerts.size() << '\n';
+
+            for (const auto& alert : alerts) {
+                std::cout << "ALERT: "
+                          << alert << '\n';
+            }
+        }
     }
 
     close(clientSocket);
