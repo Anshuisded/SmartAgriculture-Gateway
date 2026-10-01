@@ -3,7 +3,7 @@
 
 #include <string>
 #include <thread>
-
+#include "logging/Logger.h"
 
 class TcpServer {
 public:
@@ -15,6 +15,8 @@ public:
 private:
     int port;
     int serverSocket;
+Logger logger;
+
 
     void handleClient(int clientSocket);
 };

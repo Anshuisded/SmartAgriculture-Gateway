@@ -5,6 +5,7 @@
 #include "processing/TelemetryProcessor.h"
 #include "processing/TelemetryValidator.h"
 #include "sensor/SensorData.h"
+#include "logging/Logger.h"
 
 #include <arpa/inet.h>
 #include <cstring>
@@ -17,7 +18,7 @@
 #include <thread>
 
 TcpServer::TcpServer(int port)
-    : port(port), serverSocket(-1) {
+    : port(port), serverSocket(-1), logger("logs/gateway.log") {
 }
 
 TcpServer::~TcpServer() {
@@ -76,6 +77,8 @@ void TcpServer::start() {
 
     std::cout << "TCP Gateway listening on port "
               << port << "...\n";
+logger.info("TCP Gateway started on port " + std::to_string(port));
+
 
     while (true) {
 
@@ -93,6 +96,10 @@ void TcpServer::start() {
         }
 
         std::cout << "Sensor node connected.\n";
+
+logger.info("Sensor node connected");
+
+
 
         std::thread clientThread(
             &TcpServer::handleClient,
@@ -133,6 +140,8 @@ void TcpServer::handleClient(int clientSocket) {
 
     std::cout << "Received telemetry:\n";
     std::cout << message << '\n';
+logger.info("Telemetry received: "+ message);
+
 
     SensorData data;
 
@@ -193,6 +202,7 @@ void TcpServer::handleClient(int clientSocket) {
     if (!validator.validate(data)) {
 
         std::cout << "Telemetry validation: FAILED\n";
+logger.error("Telemetry validation failed");
 
     } else {
 
@@ -212,6 +222,10 @@ void TcpServer::handleClient(int clientSocket) {
 
             std::cout << "Alerts generated: "
                       << alerts.size() << '\n';
+ logger.warning(
+        "Alerts generated: " + std::to_string(alerts.size()));
+
+
 
             for (const auto& alert : alerts) {
                 std::cout << "ALERT: "
