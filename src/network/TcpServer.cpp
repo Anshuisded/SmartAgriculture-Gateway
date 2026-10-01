@@ -1,9 +1,15 @@
 #include "network/TcpServer.h"
 
+#include "processing/TelemetryProcessor.h"
+#include "processing/TelemetryValidator.h"
+#include "sensor/SensorData.h"
+
 #include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
+#include <sstream>
+#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <thread>
@@ -107,20 +113,83 @@ void TcpServer::handleClient(int clientSocket) {
         sizeof(buffer) - 1,
         0);
 
-    if (bytesReceived > 0) {
+    if (bytesReceived <= 0) {
 
-        buffer[bytesReceived] = '\0';
+        if (bytesReceived == 0) {
+            std::cout << "Sensor node disconnected.\n";
+        } else {
+            std::cerr << "Error receiving telemetry.\n";
+        }
 
-        std::cout << "Received telemetry:\n";
-        std::cout << buffer << '\n';
+        close(clientSocket);
+        return;
+    }
 
-    } else if (bytesReceived == 0) {
+    buffer[bytesReceived] = '\0';
 
-        std::cout << "Sensor node disconnected.\n";
+    std::string message(buffer);
+
+    std::cout << "Received telemetry:\n";
+    std::cout << message << '\n';
+
+    SensorData data;
+
+    std::stringstream stream(message);
+    std::string field;
+
+    while (std::getline(stream, field, '|')) {
+
+        std::size_t separator = field.find('=');
+
+        if (separator == std::string::npos) {
+            if (data.nodeId.empty()) {
+                data.nodeId = field;
+            }
+            continue;
+        }
+
+        std::string key = field.substr(0, separator);
+        std::string value = field.substr(separator + 1);
+
+        try {
+
+            if (key == "soil_moisture") {
+                data.soilMoisture = std::stod(value);
+            }
+            else if (key == "temperature") {
+                data.temperature = std::stod(value);
+            }
+            else if (key == "humidity") {
+                data.humidity = std::stod(value);
+            }
+            else if (key == "battery") {
+                data.batteryLevel = std::stod(value);
+            }
+            else if (key == "status") {
+                data.status = value;
+            }
+
+        } catch (const std::exception&) {
+
+            std::cerr << "Invalid numeric telemetry value.\n";
+            close(clientSocket);
+            return;
+        }
+    }
+
+    TelemetryValidator validator;
+    TelemetryProcessor processor;
+
+    if (!validator.validate(data)) {
+
+        std::cout << "Telemetry validation: FAILED\n";
 
     } else {
 
-        std::cerr << "Error receiving telemetry.\n";
+        std::cout << "Telemetry validation: PASSED\n";
+
+        std::cout << "Processed telemetry:\n";
+        std::cout << processor.process(data) << '\n';
     }
 
     close(clientSocket);
