@@ -1,6 +1,7 @@
 #include "network/TcpServer.h"
 
 #include "alerts/AlertEngine.h"
+#include "monitoring/NodeHealthMonitor.h"
 #include "processing/TelemetryProcessor.h"
 #include "processing/TelemetryValidator.h"
 #include "sensor/SensorData.h"
@@ -183,7 +184,12 @@ void TcpServer::handleClient(int clientSocket) {
     TelemetryValidator validator;
     TelemetryProcessor processor;
     AlertEngine alertEngine;
+    NodeHealthMonitor healthMonitor;
 
+    healthMonitor.updateNode(data.nodeId);
+
+
+    std::cout << "Node health: ACTIVE (" << data.nodeId << ")\n";
     if (!validator.validate(data)) {
 
         std::cout << "Telemetry validation: FAILED\n";
