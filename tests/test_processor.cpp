@@ -4,18 +4,17 @@
 
 int main() {
 
-    TelemetryProcessor processor;
-
     SensorData data;
-    data.nodeId = "NODE_01";
+
+    data.nodeId = "NODE_TEST";
     data.soilMoisture = 25.0;
     data.temperature = 28.0;
     data.humidity = 65.0;
-    data.batteryLevel = 90.0;
+    data.batteryLevel = 85.0;
 
-    std::string result = processor.process(data);
+    TelemetryProcessor processor;
 
-    std::cout << result << '\n';
+    std::cout << processor.process(data);
 
     return 0;
 }
