@@ -24,3 +24,13 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.swp
+
+# Linux kernel driver build artifacts
+driver/*.o
+driver/*.ko
+driver/*.cmd
+driver/*.mod
+driver/*.mod.c
+driver/*.mod.o
+driver/Module.symvers
+driver/modules.order
