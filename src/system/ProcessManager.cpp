@@ -1,42 +1,43 @@
 #include "system/ProcessManager.h"
 
-#include <iostream>
-#include <string>
-#include <unistd.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-void ProcessManager::runWorker(const char* workerName) {
+#include <cstdlib>
+#include <iostream>
+
+void ProcessManager::runTest() {
+
+    std::cout << "=== Process Management Test ===" << std::endl;
+
     pid_t pid = fork();
 
     if (pid < 0) {
-        std::cerr << "Failed to create process for "
-                  << workerName << ".\n";
+        std::cerr << "Failed to create child process." << std::endl;
         return;
     }
 
     if (pid == 0) {
-        std::cout << "Worker process started: "
-                  << workerName
-                  << " | PID=" << getpid()
-                  << " | Parent PID=" << getppid()
-                  << std::endl;
+        std::cout << "Child process created. PID: "
+                  << getpid() << std::endl;
 
-        _exit(0);
+        execlp("echo", "echo",
+               "Child process executed using exec().",
+               static_cast<char*>(nullptr));
+
+        std::cerr << "exec() failed." << std::endl;
+        _exit(EXIT_FAILURE);
     }
 
-    waitpid(pid, nullptr, 0);
+    int status = 0;
+    waitpid(pid, &status, 0);
 
-    std::cout << "Worker process completed: "
-              << workerName
-              << " | Child PID=" << pid
-              << "\n";
-}
-
-void ProcessManager::runWorkers(int count) {
-    for (int i = 1; i <= count; ++i) {
-        std::string workerName =
-            "AGRI_WORKER_" + std::to_string(i);
-
-        runWorker(workerName.c_str());
+    if (WIFEXITED(status)) {
+        std::cout << "Child process exited with status: "
+                  << WEXITSTATUS(status) << std::endl;
     }
+
+    std::cout << "Process management test completed."
+              << std::endl;
 }
