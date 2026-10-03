@@ -1,0 +1,76 @@
+@startuml
+left to right direction
+
+class SensorSimulator {
+    - nodeId : string
+    + SensorSimulator(nodeId : string)
+    + generateReading() : SensorData
+}
+
+class SensorData {
+    + nodeId : string
+    + timestamp : string
+    + soilMoisture : double
+    + temperature : double
+    + humidity : double
+    + batteryLevel : double
+    + status : string
+}
+
+class TcpClient {
+    - host : string
+    - port : int
+    - clientSocket : int
+    + connectToServer() : bool
+    + sendData(data : string) : bool
+}
+
+class TcpServer {
+    - port : int
+    - serverSocket : int
+    + start() : void
+    - handleClient(clientSocket : int) : void
+}
+
+class TelemetryValidator {
+    + validate(data : SensorData) : bool
+}
+
+class TelemetryProcessor {
+    + process(data : SensorData) : string
+}
+
+class AlertEngine {
+    + generateAlerts(data : SensorData) : vector<string>
+}
+
+class NodeHealthMonitor {
+    + updateNode(nodeId : string) : void
+    + getNodeStatus(nodeId : string) : string
+}
+
+class Logger {
+    - logFile : string
+    + info(message : string) : void
+    + warning(message : string) : void
+    + error(message : string) : void
+}
+
+class LinuxCharacterDriver {
+    + open() : int
+    + read() : int
+    + write() : int
+    + release() : int
+}
+
+SensorSimulator --> SensorData : generates
+TcpClient --> SensorData : sends
+TcpServer --> TelemetryValidator : validates
+TcpServer --> TelemetryProcessor : processes
+TcpServer --> AlertEngine : alerts
+TcpServer --> NodeHealthMonitor : monitors
+TcpServer --> Logger : logs
+
+LinuxCharacterDriver --> SensorData : stores/reads
+
+@enduml

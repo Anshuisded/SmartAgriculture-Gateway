@@ -1,0 +1,37 @@
+@startuml
+left to right direction
+
+actor "Administrator / User" as User
+actor "Virtual Sensor Node" as Sensor
+actor "Linux Device Interface" as Driver
+
+rectangle "Smart Agriculture Gateway" {
+
+  usecase "Start / Stop Gateway" as UC1
+  usecase "Receive Telemetry" as UC2
+  usecase "Validate Telemetry" as UC3
+  usecase "Process Telemetry" as UC4
+  usecase "Monitor Node Health" as UC5
+  usecase "Generate Alerts" as UC6
+  usecase "Log Gateway Events" as UC7
+  usecase "Read Sensor Data" as UC8
+  usecase "Write Sensor Data" as UC9
+}
+
+User --> UC1
+User --> UC5
+User --> UC6
+User --> UC7
+
+Sensor --> UC2
+
+UC2 --> UC3
+UC3 --> UC4
+UC4 --> UC5
+UC4 --> UC6
+UC2 --> UC7
+
+Driver --> UC8
+Driver --> UC9
+
+@enduml

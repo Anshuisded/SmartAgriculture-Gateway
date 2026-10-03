@@ -1,0 +1,38 @@
+@startuml
+title Smart Agriculture Gateway - Telemetry Sequence
+
+actor "Virtual Sensor Node" as Sensor
+participant "TcpServer" as Gateway
+participant "TelemetryValidator" as Validator
+participant "TelemetryProcessor" as Processor
+participant "AlertEngine" as Alert
+participant "NodeHealthMonitor" as Health
+participant "Logger" as Logger
+
+Sensor -> Gateway : Connect to TCP gateway
+Gateway -> Logger : Log connection
+
+Sensor -> Gateway : Send telemetry
+Gateway -> Logger : Log received telemetry
+
+Gateway -> Health : Update node status
+Health --> Gateway : Node ACTIVE
+
+Gateway -> Validator : Validate telemetry
+Validator --> Gateway : Validation result
+
+alt Valid telemetry
+    Gateway -> Processor : Process telemetry
+    Processor --> Gateway : Processed result
+
+    Gateway -> Alert : Generate alerts
+    Alert --> Gateway : Alert list
+
+    Gateway -> Logger : Log processing and alerts
+else Invalid telemetry
+    Gateway -> Logger : Log validation error
+end
+
+Gateway --> Sensor : Connection handling complete
+
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+title Smart Agriculture Gateway - State Machine
+
+[*] --> IDLE
+
+IDLE --> CONNECTED : Sensor connects
+CONNECTED --> RECEIVING : Telemetry received
+
+RECEIVING --> VALIDATING : Message parsed
+
+VALIDATING --> PROCESSING : Valid telemetry
+VALIDATING --> ERROR : Invalid telemetry
+
+PROCESSING --> ALERT_CHECK : Processing complete
+
+ALERT_CHECK --> LOGGING : Alerts checked
+LOGGING --> RECEIVING : Continue monitoring
+
+ERROR --> LOGGING : Log validation error
+LOGGING --> RECEIVING : Wait for next telemetry
+
+RECEIVING --> DISCONNECTED : Connection closed
+DISCONNECTED --> IDLE : Ready for next node
+
+@enduml
