@@ -16,6 +16,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <thread>
+#include <csignal>
+#include <atomic>
 
 TcpServer::TcpServer(int port)
     : port(port), serverSocket(-1), logger("logs/gateway.log") {
@@ -27,7 +29,21 @@ TcpServer::~TcpServer() {
     }
 }
 
+static std::atomic<bool> shutdownRequested(false);
+
+void handleShutdown(int) {
+    shutdownRequested = true;
+}
+
 void TcpServer::start() {
+
+    struct sigaction action{};
+    action.sa_handler = handleShutdown;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+
+    sigaction(SIGINT, &action, nullptr);
+    sigaction(SIGTERM, &action, nullptr);
 
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -80,7 +96,7 @@ void TcpServer::start() {
 logger.info("TCP Gateway started on port " + std::to_string(port));
 
 
-    while (true) {
+    while (!shutdownRequested) {
 
         sockaddr_in clientAddress{};
         socklen_t clientLength = sizeof(clientAddress);
@@ -107,6 +123,14 @@ logger.info("Sensor node connected");
             clientSocket);
 
         clientThread.detach();
+    }
+
+    std::cout << "Gateway shutting down gracefully..." << std::endl;
+    logger.info("TCP Gateway stopped gracefully");
+
+    if (serverSocket >= 0) {
+        close(serverSocket);
+        serverSocket = -1;
     }
 }
 
