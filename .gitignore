@@ -34,3 +34,4 @@ driver/*.mod.c
 driver/*.mod.o
 driver/Module.symvers
 driver/modules.order
+test_tcp_client

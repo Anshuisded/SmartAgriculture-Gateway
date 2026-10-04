@@ -24,3 +24,6 @@ run: $(TARGET)
 	./$(TARGET)
 
 .PHONY: all clean run
+
+test_client: tests/test_tcp_client.cpp src/network/TcpClient.cpp src/sensor/SensorSimulator.cpp
+	g++ $(CXXFLAGS) -Iinclude/sensor $^ -o test_tcp_client
